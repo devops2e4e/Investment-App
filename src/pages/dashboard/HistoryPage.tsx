@@ -1,0 +1,81 @@
+import { useSimulation } from '../../context/SimulationContext';
+import { ArrowDownLeft, ArrowUpRight, Wallet, History as HistoryIcon } from 'lucide-react';
+
+export const HistoryPage = () => {
+    const { transactions } = useSimulation();
+
+    return (
+        <div className="space-y-8">
+            <div className="flex flex-col md:flex-row justify-between md:items-end gap-6">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900">Simulation History</h1>
+                    <p className="text-gray-500 mt-1">Track all your virtual trades and transactions.</p>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden transition-all">
+                {transactions.length > 0 ? (
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg-gray-50/50 transition-all">
+                                <tr>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Type</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Asset</th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Amount</th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Units</th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Price</th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50 transition-all">
+                                {transactions.map((tx) => (
+                                    <tr key={tx.id} className="hover:bg-gray-50/50 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center gap-2">
+                                                <div className={`p-2 rounded-lg ${tx.type === 'Buy' ? 'bg-blue-50 text-blue-600' :
+                                                    tx.type === 'Sell' ? 'bg-orange-50 text-orange-600' :
+                                                        'bg-green-50 text-green-600'
+                                                    }`}>
+                                                    {tx.type === 'Buy' ? <ArrowDownLeft size={16} /> :
+                                                        tx.type === 'Sell' ? <ArrowUpRight size={16} /> :
+                                                            <Wallet size={16} />}
+                                                </div>
+                                                <span className="font-bold text-sm text-gray-900">{tx.type}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-bold text-gray-900">{tx.assetSymbol}</div>
+                                            <div className="text-xs text-gray-500">{tx.assetName}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
+                                            ₦{tx.amount.toLocaleString()}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                                            {tx.units.toFixed(2)}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                                            ₦{tx.price.toLocaleString()}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-400 font-medium">
+                                            {tx.date}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="text-center py-20 px-6">
+                        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
+                            <HistoryIcon size={48} />
+                        </div>
+                        <h3 className="font-bold text-gray-900 mb-2">No transactions yet</h3>
+                        <p className="text-gray-500 text-sm max-w-xs mx-auto">
+                            Start trading in the market to see your simulation history here.
+                        </p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
