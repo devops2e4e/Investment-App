@@ -6,8 +6,8 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 
 const app = express();
-const PORT = 5000;
-const SECRET_KEY = 'finexa_secret_key_123'; // In a real app, use environment variables
+const PORT = process.env.PORT || 5000;
+const SECRET_KEY = process.env.SECRET_KEY || 'finexa_secret_key_123';
 
 app.use(cors());
 app.use(express.json());
