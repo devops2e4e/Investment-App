@@ -4,7 +4,7 @@ services:
     runtime: node
     buildCommand: npm install
     startCommand: npm start
-    rootDirectory: server
+    rootDir: server
     envVars:
       - key: SECRET_KEY
         generateValue: true
