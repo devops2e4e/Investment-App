@@ -156,7 +156,7 @@ Since you already have your backend link, follow these steps to deploy the FINEX
 ### 1. Configure Environment Variables
 Create a `.env` file in the root directory (use `.env.example` as a template) and add your backend link:
 ```bash
-VITE_API_URL=https://your-deployed-backend-link.com
+VITE_API_URL=https://investmentapi.e4eweb.space/api
 ```
 
 ### 2. Deploy to Vercel (Recommended)
