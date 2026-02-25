@@ -149,22 +149,42 @@ Finexa follows a **Minimalist-Futuristic** design system:
 
 ---
 
-## 🚢 Deployment
+## 🚀 Deployment
 
-### Frontend (Vercel/Netlify)
+Since you already have your backend link, follow these steps to deploy the FINEXA frontend:
+
+### 1. Configure Environment Variables
+Create a `.env` file in the root directory (use `.env.example` as a template) and add your backend link:
 ```bash
-npm run build
-# Deploy dist/ directory
+VITE_API_URL=https://your-deployed-backend-link.com
 ```
 
-### Backend (Heroku/Railway/VPS)
-```bash
-cd server
-# Set environment variables
-# Deploy with your preferred platform
-```
+### 2. Deploy to Vercel (Recommended)
+Vercel is the easiest platform for Vite/React applications:
+1. **Push your code** to a GitHub/GitLab/Bitbucket repository.
+2. **Import the project** into Vercel.
+3. **Environment Variables**: During the "Configure Project" step, add a variable:
+   - **Key**: `VITE_API_URL`
+   - **Value**: `[Your Backend Link]`
+4. **Deploy**: Click deploy. Vercel will automatically detect Vite and run `npm run build`.
 
-See [DOCUMENTATION.md](./DOCUMENTATION.md) for detailed deployment instructions.
+### 3. Deploy to Netlify
+1. **Connect your Repo** to Netlify.
+2. **Build Settings**:
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+3. **Environment Variables**: Go to Site settings > Environment variables and add `VITE_API_URL`.
+
+---
+
+> [!IMPORTANT]
+> **Integration Note**: The frontend uses `VITE_API_URL` to connect to the backend. Ensure your backend is deployed and accessible via this URL.
+
+### Backend Deployment
+If you need to deploy the included backend:
+1. Navigate to the `server/` directory.
+2. Deploy to a platform that supports Node.js (Heroku, Render, etc.).
+3. Update the frontend's `VITE_API_URL` with the backend's live URL.
 
 ---
 
