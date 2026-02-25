@@ -52,6 +52,41 @@
    npm run build
    ```
 
+## 🚀 Deployment
+
+Since you already have your backend link, follow these steps to deploy the FINEXA frontend:
+
+### 1. Configure Environment Variables
+Create a `.env` file in the root directory (use `.env.example` as a template) and add your backend link:
+```bash
+VITE_API_URL=https://your-deployed-backend-link.com
+```
+
+### 2. Deploy to Vercel (Recommended)
+Vercel is the easiest platform for Vite/React applications:
+1. **Push your code** to a GitHub/GitLab/Bitbucket repository.
+2. **Import the project** into Vercel.
+3. **Environment Variables**: During the "Configure Project" step, add a variable:
+   - **Key**: `VITE_API_URL`
+   - **Value**: `[Your Backend Link]`
+4. **Deploy**: Click deploy. Vercel will automatically detect Vite and run `npm run build`.
+
+### 3. Deploy to Netlify
+1. **Connect your Repo** to Netlify.
+2. **Build Settings**:
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+3. **Environment Variables**: Go to Site settings > Environment variables and add `VITE_API_URL`.
+
+### 4. Manual Deployment (Host on any static server)
+1. Run `npm run build`.
+2. Upload the contents of the `dist` folder to your server.
+
+---
+
+> [!IMPORTANT]
+> **Integration Note**: The codebase currently uses simulation logic (mock data) in `src/services/AssetService.ts`. To fully switch to your live backend, you will need to update the service methods to use `axios` or `fetch` with the `import.meta.env.VITE_API_URL`.
+
 ## 📐 Design Philosophy
 
 Finexa follows a **Minimalist-Futuristic** design system:
