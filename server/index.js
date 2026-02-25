@@ -16,10 +16,22 @@ app.use(express.json());
 if (MONGODB_URI) {
     mongoose.connect(MONGODB_URI)
         .then(() => console.log('Connected to MongoDB'))
-        .catch(err => console.error('MongoDB connection error:', err));
+        .catch(err => {
+            console.error('CRITICAL: MongoDB connection error:', err.message);
+            console.error('URI used:', MONGODB_URI.replace(/:([^@]+)@/, ':****@')); // Hide password
+        });
 } else {
-    console.warn('MONGODB_URI is not defined. Database features will not work.');
+    console.error('CRITICAL: MONGODB_URI is not defined in environment variables.');
 }
+
+// --- HEALTH CHECK ---
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+        timestamp: new Date()
+    });
+});
 
 // --- SCHEMAS & MODELS ---
 
@@ -83,9 +95,11 @@ app.post('/api/auth/register', async (req, res) => {
         const user = new User({ username, email, password: hashedPassword });
         await user.save();
         
+        console.log(`User registered: ${email}`);
         res.json({ id: user._id, username, email });
     } catch (err) {
-        res.status(400).json({ error: 'User already exists or invalid data' });
+        console.error('Registration error:', err.message);
+        res.status(400).json({ error: 'Registration failed: ' + err.message });
     }
 });
 
