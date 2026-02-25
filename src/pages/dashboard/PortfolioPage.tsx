@@ -6,8 +6,6 @@ import {
     Wallet,
     TrendingUp,
     ArrowUpRight,
-    Plus,
-    ArrowDown,
     PieChart,
     Briefcase
 } from 'lucide-react';
@@ -47,17 +45,7 @@ export const PortfolioPage = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
                     <h1 className="text-4xl font-black text-gray-900 tracking-tight">Portfolio</h1>
-                    <p className="text-gray-500 mt-2 font-medium">Track and manage your virtual investments.</p>
-                </div>
-                <div className="flex gap-3">
-                    <button className="px-8 py-3 bg-gray-50 text-gray-900 font-black rounded-2xl hover:bg-gray-100 transition-all active:scale-95 flex items-center gap-2">
-                        <ArrowDown size={18} />
-                        Deposit
-                    </button>
-                    <button className="px-8 py-3 bg-black text-white font-black rounded-2xl hover:bg-gray-800 transition-all shadow-xl shadow-black/10 active:scale-95 flex items-center gap-2">
-                        <Plus size={18} />
-                        Invest
-                    </button>
+                    <p className="text-gray-500 mt-2 font-medium">Track and monitor your virtual simulation holdings.</p>
                 </div>
             </div>
 

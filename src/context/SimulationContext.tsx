@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
+import { useAuth } from './AuthContext';
 
 export interface Transaction {
     id: string;
@@ -23,106 +25,78 @@ interface SimulationContextType {
     balance: number;
     holdings: Holding[];
     transactions: Transaction[];
-    executeTrade: (asset: { symbol: string, name: string, price: number }, amount: number, type: 'Buy' | 'Sell') => void;
-    resetSimulation: () => void;
+    executeTrade: (asset: { symbol: string, name: string, price: number }, amount: number, type: 'Buy' | 'Sell') => Promise<void>;
+    resetSimulation: () => Promise<void>;
+    refreshState: () => Promise<void>;
 }
 
 const SimulationContext = createContext<SimulationContextType | undefined>(undefined);
 
 export const SimulationProvider = ({ children }: { children: React.ReactNode }) => {
+    const { isAuthenticated } = useAuth();
     const [balance, setBalance] = useState<number>(1000000); // Default 1M Naira
     const [holdings, setHoldings] = useState<Holding[]>([]);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-    // Load from LocalStorage
-    useEffect(() => {
-        const savedBalance = localStorage.getItem('finexa_sim_balance');
-        const savedHoldings = localStorage.getItem('finexa_sim_holdings');
-        const savedTransactions = localStorage.getItem('finexa_sim_transactions');
-
-        if (savedBalance) setBalance(JSON.parse(savedBalance));
-        if (savedHoldings) setHoldings(JSON.parse(savedHoldings));
-        if (savedTransactions) setTransactions(JSON.parse(savedTransactions));
-    }, []);
-
-    // Sync to LocalStorage
-    useEffect(() => {
-        localStorage.setItem('finexa_sim_balance', JSON.stringify(balance));
-        localStorage.setItem('finexa_sim_holdings', JSON.stringify(holdings));
-        localStorage.setItem('finexa_sim_transactions', JSON.stringify(transactions));
-    }, [balance, holdings, transactions]);
-
-    const executeTrade = (asset: { symbol: string, name: string, price: number }, amount: number, type: 'Buy' | 'Sell') => {
-        const units = amount / asset.price;
-        const fee = amount * 0.015; // 1.5% fee
-        const totalCost = amount + fee;
-
-        if (type === 'Buy') {
-            if (balance < totalCost) {
-                throw new Error('Insufficient virtual funds');
-            }
-
-            setBalance(prev => prev - totalCost);
-
-            // Update Holdings
-            setHoldings(prev => {
-                const existing = prev.find(h => h.symbol === asset.symbol);
-                if (existing) {
-                    const newTotalUnits = existing.units + units;
-                    const newAvgPrice = ((existing.units * existing.avgPrice) + (units * asset.price)) / newTotalUnits;
-                    return prev.map(h => h.symbol === asset.symbol
-                        ? { ...h, units: newTotalUnits, avgPrice: newAvgPrice }
-                        : h
-                    );
-                }
-                return [...prev, { symbol: asset.symbol, name: asset.name, units, avgPrice: asset.price }];
-            });
-        } else {
-            // Sell logic
-            const existing = holdings.find(h => h.symbol === asset.symbol);
-            if (!existing || existing.units < units) {
-                throw new Error('Insufficient units to sell');
-            }
-
-            setBalance(prev => prev + (amount - fee));
-            setHoldings(prev => {
-                const updatedUnits = existing.units - units;
-                if (updatedUnits <= 0.0001) {
-                    return prev.filter(h => h.symbol !== asset.symbol);
-                }
-                return prev.map(h => h.symbol === asset.symbol
-                    ? { ...h, units: updatedUnits }
-                    : h
-                );
-            });
+    const refreshState = async () => {
+        if (!isAuthenticated) return;
+        try {
+            const response = await api.get('/simulation/state');
+            setBalance(response.data.balance);
+            setHoldings(response.data.holdings.map((h: any) => ({
+                symbol: h.symbol,
+                name: h.name,
+                units: h.units,
+                avgPrice: h.avg_price
+            })));
+            setTransactions(response.data.transactions.map((t: any) => ({
+                id: t.id,
+                type: t.type,
+                assetSymbol: t.asset_symbol,
+                assetName: t.asset_name,
+                amount: t.amount,
+                units: t.units,
+                price: t.price,
+                date: t.date,
+                status: t.status
+            })));
+        } catch (error) {
+            console.error('Failed to fetch simulation state', error);
         }
-
-        // Add Transaction
-        const newTransaction: Transaction = {
-            id: Math.random().toString(36).substr(2, 9),
-            type,
-            assetSymbol: asset.symbol,
-            assetName: asset.name,
-            amount: totalCost,
-            units,
-            price: asset.price,
-            date: new Date().toLocaleString(),
-            status: 'Completed'
-        };
-        setTransactions(prev => [newTransaction, ...prev]);
     };
 
-    const resetSimulation = () => {
-        setBalance(1000000);
-        setHoldings([]);
-        setTransactions([]);
-        localStorage.removeItem('finexa_sim_balance');
-        localStorage.removeItem('finexa_sim_holdings');
-        localStorage.removeItem('finexa_sim_transactions');
+    // Load from API when authenticated
+    useEffect(() => {
+        if (isAuthenticated) {
+            refreshState();
+        } else {
+            // Reset local state when logged out
+            setBalance(1000000);
+            setHoldings([]);
+            setTransactions([]);
+        }
+    }, [isAuthenticated]);
+
+    const executeTrade = async (asset: { symbol: string, name: string, price: number }, amount: number, type: 'Buy' | 'Sell') => {
+        try {
+            await api.post('/simulation/trade', { asset, amount, type });
+            await refreshState();
+        } catch (error: any) {
+            throw new Error(error.response?.data?.error || 'Trade failed');
+        }
+    };
+
+    const resetSimulation = async () => {
+        try {
+            await api.post('/simulation/reset');
+            await refreshState();
+        } catch (error: any) {
+            throw new Error(error.response?.data?.error || 'Reset failed');
+        }
     };
 
     return (
-        <SimulationContext.Provider value={{ balance, holdings, transactions, executeTrade, resetSimulation }}>
+        <SimulationContext.Provider value={{ balance, holdings, transactions, executeTrade, resetSimulation, refreshState }}>
             {children}
         </SimulationContext.Provider>
     );

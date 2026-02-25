@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { PriceHistoryChart } from '../../components/market/PriceHistoryChart';
 import { InvestModal } from '../../components/dashboard/InvestModal';
 import { InfoTooltip } from '../../components/ui/InfoTooltip';
-import { AssetService } from '../../services/AssetService';
+import { useMarket } from '../../context/MarketContext';
 import {
     SearchX,
     Zap,
@@ -12,14 +12,13 @@ import {
     TrendingUp,
     TrendingDown,
     Globe,
-    ShieldCheck,
-    Info,
-    Lock
+    Info
 } from 'lucide-react';
 
 export const AssetDetailPage = () => {
     const { symbol } = useParams<{ symbol: string }>();
-    const asset = symbol ? AssetService.getBySymbol(symbol) : null;
+    const { getAssetBySymbol } = useMarket();
+    const asset = symbol ? getAssetBySymbol(symbol) : null;
 
     if (!asset) {
         return (
@@ -41,6 +40,7 @@ export const AssetDetailPage = () => {
         );
     }
 
+    const [activeRange, setActiveRange] = useState('1M');
     const [isInvestModalOpen, setIsInvestModalOpen] = useState(false);
     const isPositive = true; // Mocking "green" day for simplicity
 
@@ -64,7 +64,7 @@ export const AssetDetailPage = () => {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="max-w-6xl mx-auto space-y-8 pb-12"
+            className="max-w-full space-y-12 pb-12"
         >
             {/* Header / Breadcrumb */}
             <div className="flex items-center gap-2 text-sm text-gray-400 font-bold mb-4 uppercase tracking-widest">
@@ -105,13 +105,19 @@ export const AssetDetailPage = () => {
 
                         {/* Chart Area */}
                         <div className="mb-8 min-h-[350px]">
-                            <PriceHistoryChart basePrice={asset.price} />
+                            <PriceHistoryChart basePrice={asset.price} range={activeRange} />
                         </div>
+
+
 
                         {/* Time Ranges */}
                         <div className="flex gap-2 bg-gray-50 p-1.5 rounded-2xl w-fit">
-                            {['1D', '1W', '1M', '3M', '1Y', 'ALL'].map((range, i) => (
-                                <button key={range} className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all ${i === 2 ? 'bg-white shadow-sm text-black' : 'text-gray-400 hover:text-gray-600'}`}>
+                            {['1D', '1W', '1M', '3M', '1Y', 'ALL'].map((range) => (
+                                <button
+                                    key={range}
+                                    onClick={() => setActiveRange(range)}
+                                    className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all ${activeRange === range ? 'bg-white shadow-sm text-black' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
                                     {range}
                                 </button>
                             ))}
@@ -147,55 +153,36 @@ export const AssetDetailPage = () => {
                         variants={itemVariants}
                         className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-2xl shadow-gray-200/40 sticky top-24"
                     >
-                        <h3 className="text-2xl font-black mb-8 text-gray-900 tracking-tight">Trade {symbol}</h3>
+                        <h3 className="text-2xl font-black mb-8 text-gray-900 tracking-tight">Analysis Tools</h3>
 
-                        <div className="flex gap-4 mb-8">
-                            <button
-                                onClick={() => setIsInvestModalOpen(true)}
-                                className="flex-1 py-4 bg-green-600 hover:bg-green-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-green-900/20 active:scale-95"
-                            >
-                                Buy
-                            </button>
-                            <button className="flex-1 py-4 bg-gray-50 hover:bg-gray-100 text-gray-900 font-black rounded-2xl transition-all active:scale-95">
-                                Sell
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => setIsInvestModalOpen(true)}
+                            className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-green-900/20 active:scale-95 mb-4"
+                        >
+                            Simulate Buy
+                        </button>
 
                         <Link
                             to="/simulator"
                             className="w-full flex items-center justify-center gap-3 py-4 border-2 border-gray-100 text-gray-600 font-black rounded-2xl hover:border-black hover:text-black transition-all mb-8 group"
                         >
                             <Zap size={20} className="text-yellow-500 group-hover:scale-110 transition-transform" />
-                            Simulate Returns
+                            Projection Engine
                         </Link>
 
                         <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                <span className="text-xs font-black text-gray-900 uppercase tracking-widest">Market Open</span>
+                                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                                <span className="text-xs font-black text-gray-900 uppercase tracking-widest">Market Status</span>
                             </div>
                             <p className="text-xs text-gray-500 font-medium leading-relaxed">
-                                Orders placed now will be executed immediately at the best market price.
+                                View historical performance and project future growth based on market analysis.
                             </p>
-                        </div>
-                    </motion.div>
-
-                    <motion.div
-                        variants={itemVariants}
-                        className="bg-black text-white p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden group"
-                    >
-                        <Lock size={120} className="absolute -bottom-10 -right-10 opacity-10 group-hover:scale-110 transition-transform duration-500" />
-                        <div className="relative z-10">
-                            <div className="flex items-center gap-2 mb-4">
-                                <ShieldCheck className="text-green-400" size={20} />
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Security</span>
-                            </div>
-                            <h4 className="text-lg font-black mb-2">Regulated & Secure</h4>
-                            <p className="text-sm text-gray-400 font-medium">Your assets are held in trust by a SEC-licensed custodian.</p>
                         </div>
                     </motion.div>
                 </div>
             </div>
+
 
             <InvestModal
                 isOpen={isInvestModalOpen}

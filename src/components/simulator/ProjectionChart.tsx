@@ -84,7 +84,7 @@ export const ProjectionChart = ({ initialDeposit, monthlyContribution, durationY
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-4 h-4 rounded border-2 border-gray-300 bg-transparent"></div>
-                            <span className="text-xs font-bold text-gray-600">Invested</span>
+                            <span className="text-xs font-bold text-gray-600">Contributions</span>
                         </div>
                     </div>
                 </div>

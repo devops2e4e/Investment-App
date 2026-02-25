@@ -1,13 +1,39 @@
+import { useState } from 'react';
 import { useSimulation } from '../../context/SimulationContext';
+import { Search, X } from 'lucide-react';
 
 export const HoldingsList = () => {
     const { holdings } = useSimulation();
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const filteredHoldings = holdings.filter(h =>
+        h.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        h.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden transition-all">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+            <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                 <h3 className="font-bold text-gray-900">Your Holdings</h3>
-                <button className="text-sm font-bold text-green-600 hover:opacity-80">View Details</button>
+
+                <div className="relative w-full sm:w-64">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                        type="text"
+                        placeholder="Search holdings..."
+                        className="w-full pl-9 pr-8 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-black transition-all"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    {searchQuery && (
+                        <button
+                            onClick={() => setSearchQuery('')}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
+                        >
+                            <X size={14} />
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -21,7 +47,7 @@ export const HoldingsList = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                        {holdings.map((stock) => {
+                        {filteredHoldings.map((stock) => {
                             const marketValue = stock.units * stock.avgPrice;
 
                             return (
@@ -51,9 +77,9 @@ export const HoldingsList = () => {
                         })}
                     </tbody>
                 </table>
-                {holdings.length === 0 && (
+                {filteredHoldings.length === 0 && (
                     <div className="p-10 text-center text-gray-400 text-sm italic">
-                        No assets held in this simulation yet.
+                        {searchQuery ? `No holdings matching "${searchQuery}"` : "No assets held in this simulation yet."}
                     </div>
                 )}
             </div>

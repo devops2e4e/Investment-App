@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, X, LogOut, ChevronDown, Settings } from 'lucide-react';
 import { Logo } from '../ui/Logo';
 import { useAuth } from '../../context/AuthContext';
 
@@ -20,6 +21,20 @@ export const Header = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Lock body scroll when mobile menu is open
+    useEffect(() => {
+        if (isMobileMenuOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        // Cleanup on unmount
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isMobileMenuOpen]);
+
     const handleLogout = () => {
         logout();
         navigate('/');
@@ -28,7 +43,10 @@ export const Header = () => {
     const navLinks = [
         { name: 'Simulator', path: '/simulator' },
         { name: 'Market', path: '/dashboard/market' },
-        { name: 'Portfolio', path: '/dashboard/portfolio' },
+        { name: 'Learn', path: '/learn' },
+        { name: 'About', path: '/about' },
+        { name: 'Careers', path: '/careers' },
+        { name: 'Press', path: '/press' },
     ];
 
     return (
@@ -48,15 +66,24 @@ export const Header = () => {
 
                 {/* Center: Navigation Links */}
                 <nav className="hidden md:flex items-center gap-6 lg:gap-8 justify-center">
-                    {navLinks.map(link => (
-                        <Link
-                            key={link.name}
-                            to={link.path}
-                            className={`text-sm font-bold transition-colors whitespace-nowrap ${location.pathname === link.path ? 'text-green-600' : 'text-gray-600 hover:text-green-600'}`}
-                        >
-                            {link.name}
-                        </Link>
-                    ))}
+                    {navLinks.map(link => {
+                        const isActive = location.pathname === link.path || (link.path !== '/' && location.pathname.startsWith(link.path));
+                        return (
+                            <Link
+                                key={link.name}
+                                to={link.path}
+                                className={`relative text-sm font-bold transition-all whitespace-nowrap py-2 ${isActive ? 'text-green-600' : 'text-gray-600 hover:text-green-600'}`}
+                            >
+                                {link.name}
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="header-active"
+                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 rounded-full"
+                                    />
+                                )}
+                            </Link>
+                        );
+                    })}
                 </nav>
 
                 {/* Right: Auth Actions */}
@@ -81,6 +108,10 @@ export const Header = () => {
                                     <div className="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 p-2 py-3 animate-in fade-in slide-in-from-top-2 duration-200">
                                         <Link to="/dashboard" className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">
                                             Dashboard
+                                        </Link>
+                                        <Link to="/settings" className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">
+                                            <Settings size={16} />
+                                            Settings
                                         </Link>
                                         <button
                                             onClick={handleLogout}
@@ -119,7 +150,7 @@ export const Header = () => {
 
             {/* Mobile Navigation */}
             {isMobileMenuOpen && (
-                <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-100 p-6 space-y-6 shadow-xl animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-100 p-6 space-y-6 shadow-xl animate-in fade-in slide-in-from-top-4 duration-300 max-h-[calc(100vh-5rem)] overflow-y-auto">
                     <div className="flex flex-col gap-4">
                         {navLinks.map(link => (
                             <Link
@@ -132,14 +163,68 @@ export const Header = () => {
                             </Link>
                         ))}
                     </div>
-                    <div className="flex flex-col gap-3 pt-4">
+
+                    {/* Dashboard Navigation for Mobile (when authenticated) */}
+                    {isAuthenticated && (
+                        <div className="border-t border-gray-100 pt-4">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Dashboard</p>
+                            <div className="flex flex-col gap-2">
+                                <Link
+                                    to="/dashboard"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="text-base font-bold text-gray-900 py-3 px-4 hover:bg-gray-50 rounded-xl transition-colors"
+                                >
+                                    Overview
+                                </Link>
+                                <Link
+                                    to="/dashboard/portfolio"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="text-base font-bold text-gray-900 py-3 px-4 hover:bg-gray-50 rounded-xl transition-colors"
+                                >
+                                    Simulated Portfolio
+                                </Link>
+                                <Link
+                                    to="/dashboard/market"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="text-base font-bold text-gray-900 py-3 px-4 hover:bg-gray-50 rounded-xl transition-colors"
+                                >
+                                    Market Data
+                                </Link>
+                                <Link
+                                    to="/dashboard/history"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="text-base font-bold text-gray-900 py-3 px-4 hover:bg-gray-50 rounded-xl transition-colors"
+                                >
+                                    Simulation History
+                                </Link>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex flex-col gap-3 pt-4 border-t border-gray-100">
                         {isAuthenticated ? (
-                            <button
-                                onClick={handleLogout}
-                                className="w-full py-4 text-center font-bold text-red-600 bg-red-50 rounded-xl"
-                            >
-                                Log out
-                            </button>
+                            <>
+                                <Link
+                                    to="/dashboard"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="w-full py-4 text-center font-bold text-gray-900 bg-gray-50 rounded-xl"
+                                >
+                                    Dashboard
+                                </Link>
+                                <Link
+                                    to="/settings"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="w-full py-4 text-center font-bold text-gray-900 bg-gray-50 rounded-xl"
+                                >
+                                    Settings
+                                </Link>
+                                <button
+                                    onClick={handleLogout}
+                                    className="mb-10 w-full py-4 text-center font-bold text-red-600 bg-red-50 rounded-xl"
+                                >
+                                    Log out
+                                </button>
+                            </>
                         ) : (
                             <>
                                 <Link to="/login" className="w-full py-4 text-center font-bold text-gray-900 bg-gray-50 rounded-xl">

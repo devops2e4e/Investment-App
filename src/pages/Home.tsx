@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import {
     ArrowRight,
     TrendingUp,
-    Shield,
     Globe,
     Zap,
     BarChart3,
@@ -24,17 +23,17 @@ export const Home = () => {
                         className="max-w-xl"
                     >
                         <h1 className="text-6xl font-black leading-[1.05] mb-6 tracking-tight text-gray-900 lg:text-7xl">
-                            Invest in your future, <span className="text-green-600">fearlessly.</span>
+                            Analyze your future, <span className="text-green-600">fearlessly.</span>
                         </h1>
                         <p className="text-xl text-gray-500 mb-10 leading-relaxed font-medium">
-                            Commission-free investing for Nigerians. Access local NGX stocks, US equities, and global markets in one simple, secure platform.
+                            Risk-free market simulation for Nigerians. Access local NGX stocks, US equities, and global markets in one simple, educational platform.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-5">
                             <Link to="/signup" className="inline-flex items-center justify-center px-10 py-4 bg-black text-white font-bold rounded-full text-lg hover:bg-gray-800 transition-all shadow-xl shadow-black/10 hover:shadow-2xl hover:-translate-y-1">
-                                Start Investing
+                                Create Account
                             </Link>
-                            <Link to="/simulator" className="inline-flex items-center justify-center px-10 py-4 bg-white text-black border-2 border-gray-100 font-bold rounded-full text-lg hover:border-gray-900 transition-all group">
-                                Try Simulator
+                            <Link to="/login" className="inline-flex items-center justify-center px-10 py-4 bg-white text-black border-2 border-gray-100 font-bold rounded-full text-lg hover:border-gray-900 transition-all group">
+                                Log In
                                 <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
                             </Link>
                         </div>
@@ -47,7 +46,7 @@ export const Home = () => {
                                 ))}
                             </div>
                             <p className="text-sm text-gray-500 font-bold">
-                                Joined by <span className="text-black">50,000+</span> investors
+                                Joined by <span className="text-black">50,000+</span> users
                             </p>
                         </div>
                     </motion.div>
@@ -119,8 +118,8 @@ export const Home = () => {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                         >
-                            <h2 className="text-5xl font-black mb-6 text-gray-900 tracking-tight">Everything needed to build wealth</h2>
-                            <p className="text-xl text-gray-500 font-medium leading-relaxed">Whether you're starting with ₦5,000 or ₦5,000,000, we have the tools to help you grow.</p>
+                            <h2 className="text-5xl font-black mb-6 text-gray-900 tracking-tight">Everything needed to analyze wealth</h2>
+                            <p className="text-xl text-gray-500 font-medium leading-relaxed">Whether you're starting with virtual ₦5,000 or ₦5,000,000, we have the tools to help you learn.</p>
                         </motion.div>
                     </div>
 
@@ -128,19 +127,19 @@ export const Home = () => {
                         <FeatureCard
                             icon={<Globe size={32} />}
                             title="Global Access"
-                            description="Invest in US stocks like Apple and Tesla right alongside Nigerian giants like Dangote Cement."
+                            description="Analyze US stocks like Apple and Tesla right alongside Nigerian giants like Dangote Cement."
                             delay={0.1}
                         />
                         <FeatureCard
                             icon={<Zap size={32} />}
                             title="Powerful Simulation"
-                            description="Test your strategies with our advanced simulator before risking real money. Learn by doing."
+                            description="Test your strategies with our advanced simulator before taking real market risks. Learn by doing."
                             delay={0.2}
                         />
                         <FeatureCard
-                            icon={<Shield size={32} />}
-                            title="Bank-Grade Security"
-                            description="Your assets are protected with 256-bit encryption and regulated by the SEC. Your trust is our priority."
+                            icon={<BarChart3 size={32} />}
+                            title="Visual Insights"
+                            description="Experience market trends with high-performance charts and real-time historical data analysis."
                             delay={0.3}
                         />
                     </div>
@@ -168,7 +167,7 @@ export const Home = () => {
                             <div className="space-y-8 max-w-sm">
                                 <div>
                                     <div className="flex justify-between text-sm mb-3">
-                                        <span className="text-gray-400 font-bold">Monthly Investment</span>
+                                        <span className="text-gray-400 font-bold">Monthly Simulation</span>
                                         <span className="font-black text-white">₦100,000</span>
                                     </div>
                                     <div className="h-3 bg-gray-800 rounded-full overflow-hidden p-1">

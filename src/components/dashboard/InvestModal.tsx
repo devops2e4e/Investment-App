@@ -59,7 +59,7 @@ export const InvestModal = ({ isOpen, onClose, asset }: InvestModalProps) => {
         try {
             // Add slight artificial delay
             await new Promise(resolve => setTimeout(resolve, 800));
-            executeTrade(asset, totalCost, 'Buy');
+            await executeTrade(asset, totalCost, 'Buy');
             setStep('success');
         } catch (err: any) {
             setError(err.message || 'Trade failed');

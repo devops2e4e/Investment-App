@@ -13,8 +13,8 @@ export const Footer = () => {
                             <Logo />
                         </div>
                         <p className="text-gray-500 max-w-sm mb-10 text-lg leading-relaxed font-medium">
-                            Commission-free investing for everyone.
-                            We're democratizing finance for the next generation of Nigerian investors.
+                            Risk-free market simulation for everyone.
+                            We're democratizing financial education for the next generation of Nigerian users.
                         </p>
                         <div className="flex gap-5">
                             <SocialIcon icon={<Twitter size={20} />} href="#" />
@@ -27,9 +27,8 @@ export const Footer = () => {
                     <div>
                         <h4 className="font-bold mb-4">Product</h4>
                         <ul className="space-y-3 text-sm text-gray-500">
-                            <li><Link to="/invest" className="hover:text-green-600">Invest</Link></li>
                             <li><Link to="/simulator" className="hover:text-green-600">Simulator</Link></li>
-                            <li><Link to="/crypto" className="hover:text-green-600">Crypto</Link></li>
+                            <li><Link to="/dashboard/market" className="hover:text-green-600">Market</Link></li>
                             <li><Link to="/learn" className="hover:text-green-600">Learn</Link></li>
                         </ul>
                     </div>
@@ -56,7 +55,7 @@ export const Footer = () => {
                 <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400">
                     <p>© 2026 FINEXA Securities. All rights reserved.</p>
                     <div className="flex gap-6 mt-4 md:mt-0">
-                        <span>SEC Regulated</span>
+                        <span>Educational Platform</span>
                         <span>NDPR Compliant</span>
                     </div>
                 </div>

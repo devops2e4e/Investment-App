@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { LayoutDashboard, Briefcase, TrendingUp, History } from 'lucide-react';
 
 const sidebarItems = [
@@ -24,11 +25,17 @@ export const Sidebar = () => {
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${isActive
-                                ? 'bg-black text-white shadow-lg shadow-black/10'
-                                : 'text-gray-600 hover:bg-white hover:text-black transition-smooth'
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group relative ${isActive
+                                ? 'bg-black text-white shadow-xl shadow-black/10 translate-x-1'
+                                : 'text-gray-600 hover:bg-black hover:text-white hover:translate-x-1 transition-smooth'
                                 }`}
                         >
+                            {isActive && (
+                                <motion.div
+                                    layoutId="active-pill"
+                                    className="absolute left-0 w-1 h-6 bg-green-500 rounded-r-full"
+                                />
+                            )}
                             <span className={`transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
                                 <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
                             </span>

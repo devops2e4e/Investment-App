@@ -12,31 +12,41 @@ export interface Asset {
 
 export const MOCK_ASSETS: Asset[] = [
     // Nigeria Stocks (NGX)
-    { id: '1', symbol: 'MTNN', name: 'MTN Nigeria', price: 280.50, change: 1.25, type: 'NGX', sector: 'Telecommunications', description: 'Leading telecommunications provider in Nigeria.' },
-    { id: '2', symbol: 'DANGCEM', name: 'Dangote Cement', price: 310.00, change: -0.50, type: 'NGX', sector: 'Industrial Goods', description: 'Largest cement producer in Sub-Saharan Africa.' },
-    { id: '3', symbol: 'ZENITH', name: 'Zenith Bank', price: 34.50, change: 2.10, type: 'NGX', sector: 'Financial Services', description: 'One of the largest financial institutions in Nigeria.' },
-    { id: '4', symbol: 'GTCO', name: 'GT Corporate', price: 38.20, change: 0.85, type: 'NGX', sector: 'Financial Services', description: 'A leading Nigerian multinational financial services group.' },
-    { id: '5', symbol: 'NESTLE', name: 'Nestle Nigeria', price: 1050.00, change: -1.20, type: 'NGX', sector: 'Consumer Goods', description: 'A leading nutrition, health and wellness company in Nigeria.' },
-    { id: '6', symbol: 'AIRTELAFRI', name: 'Airtel Africa', price: 1200.00, change: 0.45, type: 'NGX', sector: 'Telecommunications', description: 'Global telecommunications provider with operations in 14 countries.' },
-    { id: '7', symbol: 'BUACEMENT', name: 'BUA Cement', price: 95.00, change: 1.15, type: 'NGX', sector: 'Industrial Goods', description: 'A major cement manufacturing company in Nigeria.' },
+    { id: '1', symbol: 'MTNN', name: 'MTN Nigeria Communications', price: 215.00, change: 1.25, type: 'NGX', sector: 'Telecommunications', description: 'Nigeria\'s largest mobile operator and telecommunications provider.' },
+    { id: '2', symbol: 'DANGCEM', name: 'Dangote Cement', price: 650.00, change: -0.50, type: 'NGX', sector: 'Industrial Goods', description: 'Sub-Saharan Africa\'s leading cement producer.' },
+    { id: '3', symbol: 'AIRTELAFRI', name: 'Airtel Africa', price: 2200.00, change: 0.45, type: 'NGX', sector: 'Telecommunications', description: 'Leading provider of telecommunications and mobile money services.' },
+    { id: '4', symbol: 'BUAFOODS', name: 'BUA Foods', price: 380.00, change: 0.85, type: 'NGX', sector: 'Consumer Goods', description: 'Leading food and fast-moving consumer goods company in Nigeria.' },
+    { id: '5', symbol: 'BUACEMENT', name: 'BUA Cement', price: 143.00, change: 1.15, type: 'NGX', sector: 'Industrial Goods', description: 'Major cement manufacturing company and building materials provider.' },
+    { id: '6', symbol: 'ZENITHBANK', name: 'Zenith Bank', price: 35.50, change: 2.10, type: 'NGX', sector: 'Financial Services', description: 'Premium Nigerian financial services provider.' },
+    { id: '7', symbol: 'GTCO', name: 'Guaranty Trust Holding', price: 41.20, change: 0.85, type: 'NGX', sector: 'Financial Services', description: 'Leading Nigerian multinational financial services group.' },
+    { id: '8', symbol: 'SEPLAT', name: 'Seplat Energy', price: 3400.00, change: 1.50, type: 'NGX', sector: 'Oil & Gas', description: 'Leading independent Nigerian energy company.' },
+    { id: '9', symbol: 'GEREGU', name: 'Geregu Power', price: 1000.00, change: 2.30, type: 'NGX', sector: 'Utilities', description: 'Major power generation company in Nigeria.' },
+    { id: '10', symbol: 'ACCESSCORP', name: 'Access Holdings', price: 17.80, change: -0.30, type: 'NGX', sector: 'Financial Services', description: 'Multinational financial services holding company.' },
+    { id: '11', symbol: 'FBNH', name: 'FBN Holdings', price: 22.50, change: 0.10, type: 'NGX', sector: 'Financial Services', description: 'Parent company of First Bank of Nigeria.' },
+    { id: '12', symbol: 'UBA', name: 'United Bank for Africa', price: 23.00, change: 0.40, type: 'NGX', sector: 'Financial Services', description: 'Leading pan-African financial services institution.' },
+    { id: '13', symbol: 'NESTLE', name: 'Nestle Nigeria', price: 900.00, change: -1.20, type: 'NGX', sector: 'Consumer Goods', description: 'Leading food and beverage manufacturing company.' },
+    { id: '14', symbol: 'STANBIC', name: 'Stanbic IBTC Holdings', price: 55.00, change: 0.75, type: 'NGX', sector: 'Financial Services', description: 'Comprehensive financial services provider.' },
+    { id: '15', symbol: 'TRANSCORP', name: 'Transnational Corp', price: 11.50, change: 3.20, type: 'NGX', sector: 'Conglomerate', description: 'Diversified conglomerate with interests in power, energy, and hospitality.' },
+    { id: '16', symbol: 'OKOMUOIL', name: 'Okomu Oil Palm', price: 270.00, change: 0.00, type: 'NGX', sector: 'Agriculture', description: 'Leading Nigerian oil palm and rubber producer.' },
+    { id: '17', symbol: 'PRESCO', name: 'Presco PLC', price: 250.00, change: 0.05, type: 'NGX', sector: 'Agriculture', description: 'Integrated oil palm plantation and processing company.' },
+    { id: '18', symbol: 'FLOURMILL', name: 'Flour Mills of Nigeria', price: 36.50, change: -0.15, type: 'NGX', sector: 'Consumer Goods', description: 'Leading Nigerian agribusiness and food company.' },
+    { id: '19', symbol: 'TOTAL', name: 'TotalEnergies Marketing', price: 385.00, change: 0.90, type: 'NGX', sector: 'Oil & Gas', description: 'Energy marketing and distribution company.' },
+    { id: '20', symbol: 'UNILEVER', name: 'Unilever Nigeria', price: 16.00, change: 0.20, type: 'NGX', sector: 'Consumer Goods', description: 'Leading manufacturer of food and home care products.' },
 
-    // Global Stocks
-    { id: '10', symbol: 'AAPL', name: 'Apple Inc.', price: 235000.00, change: 0.85, type: 'Global', sector: 'Technology', description: 'Designs and manufactures iPhones, iPads, and Macs.' },
-    { id: '11', symbol: 'TSLA', name: 'Tesla Inc.', price: 185000.00, change: -1.20, type: 'Global', sector: 'Automotive', description: 'Electric vehicle and clean energy company.' },
-    { id: '12', symbol: 'MSFT', name: 'Microsoft Corp.', price: 420000.00, change: 1.10, type: 'Global', sector: 'Technology', description: 'Leader in software, services, and cloud computing.' },
-    { id: '13', symbol: 'AMZN', name: 'Amazon.com Inc.', price: 175000.00, change: 0.95, type: 'Global', sector: 'Consumer Cyclical', description: 'Connects millions of customers with retail and services.' },
-    { id: '14', symbol: 'NVDA', name: 'NVIDIA Corp.', price: 125000.00, change: 4.20, type: 'Global', sector: 'Technology', description: 'Pioneer in GPU-accelerated computing.' },
-    { id: '15', symbol: 'NFLX', name: 'Netflix Inc.', price: 650000.00, change: 0.30, type: 'Global', sector: 'Communication Services', description: 'Global streaming entertainment service.' },
+    // Global Stocks (Simplified Selection)
+    { id: '101', symbol: 'AAPL', name: 'Apple Inc.', price: 235000.00, change: 0.85, type: 'Global', sector: 'Technology', description: 'Global technology leader.' },
+    { id: '102', symbol: 'TSLA', name: 'Tesla Inc.', price: 185000.00, change: -1.20, type: 'Global', sector: 'Automotive', description: 'EV and clean energy pioneer.' },
+    { id: '103', symbol: 'MSFT', name: 'Microsoft', price: 420000.00, change: 1.10, type: 'Global', sector: 'Technology', description: 'Global software and cloud leader.' },
+    { id: '104', symbol: 'NVDA', name: 'NVIDIA', price: 125000.00, change: 4.20, type: 'Global', sector: 'Technology', description: 'Leader in AI and GPU computing.' },
 
-    // Crypto
-    { id: '20', symbol: 'BTC', name: 'Bitcoin', price: 98000000.00, change: 3.50, type: 'Crypto', sector: 'Digital Currency', description: 'First decentralized cryptocurrency.' },
-    { id: '21', symbol: 'ETH', name: 'Ethereum', price: 4500000.00, change: 2.80, type: 'Crypto', sector: 'Smart Contracts', description: 'Leading smart contract platform.' },
-    { id: '22', symbol: 'SOL', name: 'Solana', price: 150000.00, change: -5.40, type: 'Crypto', sector: 'High Performance', description: 'Layer-1 blockchain for speed and scalability.' },
-    { id: '23', symbol: 'BNB', name: 'Binance Coin', price: 650000.00, change: 1.15, type: 'Crypto', sector: 'Exchange Token', description: 'Utility token for the Binance ecosystem.' },
+    // Crypto (Core Assets)
+    { id: '201', symbol: 'BTC', name: 'Bitcoin', price: 98000000.00, change: 3.50, type: 'Crypto', sector: 'Digital Currency', description: 'First decentralized cryptocurrency.' },
+    { id: '202', symbol: 'ETH', name: 'Ethereum', price: 4500000.00, change: 2.80, type: 'Crypto', sector: 'Smart Contracts', description: 'Leading smart contract platform.' },
+    { id: '203', symbol: 'SOL', name: 'Solana', price: 150000.00, change: -5.40, type: 'Crypto', sector: 'High Performance', description: 'High-speed layer-1 blockchain.' },
 
     // Bonds
-    { id: '30', symbol: 'FGN2030', name: 'FGN Bond 2030', price: 1000.00, change: 0.05, type: 'Bonds', sector: 'Sovereign', description: 'Federal Government of Nigeria sovereign bond.' },
-    { id: '31', symbol: 'FGN2035', name: 'FGN Bond 2035', price: 1000.00, change: 0.02, type: 'Bonds', sector: 'Sovereign', description: 'Long-term government debt security.' },
+    { id: '301', symbol: 'FGN2030', name: 'FGN Bond 2030', price: 1000.00, change: 0.05, type: 'Bonds', sector: 'Sovereign', description: 'Federal Government of Nigeria sovereign bond.' },
+    { id: '302', symbol: 'FGN2035', name: 'FGN Bond 2035', price: 1000.00, change: 0.02, type: 'Bonds', sector: 'Sovereign', description: 'Long-term government debt security.' },
 ];
 
 export const AssetService = {
@@ -50,22 +60,31 @@ export const AssetService = {
         const lowerQuery = query.toLowerCase();
         return MOCK_ASSETS.filter(a =>
             a.symbol.toLowerCase().includes(lowerQuery) ||
-            a.name.toLowerCase().includes(lowerQuery)
+            a.name.toLowerCase().includes(lowerQuery) ||
+            a.sector.toLowerCase().includes(lowerQuery) ||
+            a.description.toLowerCase().includes(lowerQuery)
         );
     },
 
     getFiltered: (type: string, searchQuery: string = '') => {
         let assets = MOCK_ASSETS;
-        if (type !== 'All') {
-            assets = assets.filter(a => a.type === type);
-        }
+
         if (searchQuery) {
+            // When searching, we search across ALL categories as requested ("all cards can be searched")
             const lowerQuery = searchQuery.toLowerCase();
-            assets = assets.filter(a =>
+            return assets.filter(a =>
                 a.symbol.toLowerCase().includes(lowerQuery) ||
-                a.name.toLowerCase().includes(lowerQuery)
+                a.name.toLowerCase().includes(lowerQuery) ||
+                a.sector.toLowerCase().includes(lowerQuery) ||
+                a.description.toLowerCase().includes(lowerQuery)
             );
         }
+
+        // If no search query, apply the tab filter
+        if (type !== 'All') {
+            return assets.filter(a => a.type === type);
+        }
+
         return assets;
     }
 };

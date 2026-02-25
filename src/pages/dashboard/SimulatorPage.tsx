@@ -20,7 +20,7 @@ export const SimulatorPage = () => {
     };
 
     return (
-        <div className="pb-20">
+        <div className="pb-20 pl-10">
             {/* Page Header */}
             <div className="py-12">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">

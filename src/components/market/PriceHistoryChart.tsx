@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
 interface PricePoint {
@@ -6,35 +7,73 @@ interface PricePoint {
 }
 
 // Mock data generator for demo purposes
-const generateData = (startPrice: number, points: number): PricePoint[] => {
+const generateData = (startPrice: number, range: string): PricePoint[] => {
     let currentPrice = startPrice;
     const data: PricePoint[] = [];
     const now = new Date();
 
+    let points = 30;
+    let formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+
+    switch (range) {
+        case '1D':
+            points = 24;
+            formatOptions = { hour: '2-digit', minute: '2-digit' };
+            break;
+        case '1W':
+            points = 7;
+            break;
+        case '1M':
+            points = 30;
+            break;
+        case '3M':
+            points = 90;
+            break;
+        case '1Y':
+            points = 52; // Weekly points for a year
+            break;
+        case 'ALL':
+            points = 100;
+            break;
+    }
+
+    // Adjust start price backwards based on random walk to make end price match current totalPortfolioValue
     for (let i = points; i >= 0; i--) {
         const date = new Date(now);
-        date.setDate(date.getDate() - i);
+        if (range === '1D') {
+            date.setHours(date.getHours() - i);
+        } else if (range === '1Y' || range === 'ALL') {
+            date.setDate(date.getDate() - (i * 7));
+        } else {
+            date.setDate(date.getDate() - i);
+        }
 
         // Random walk
-        const change = (Math.random() - 0.5) * (startPrice * 0.05);
+        const volatility = range === '1D' ? 0.005 : 0.02;
+        const change = (Math.random() - 0.48) * (startPrice * volatility); // Slight upward bias
         currentPrice += change;
 
         data.push({
-            date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            date: date.toLocaleDateString('en-US', formatOptions),
             price: Math.max(0.1, currentPrice),
         });
     }
-    return data;
+
+    // Normalize so the last point matches the base price (simulated current value)
+    const lastPoint = data[data.length - 1];
+    const diff = startPrice - lastPoint.price;
+    return data.map(p => ({ ...p, price: p.price + diff }));
 };
 
 interface PriceHistoryChartProps {
     basePrice: number;
     color?: string;
+    range?: string;
 }
 
-export const PriceHistoryChart = ({ basePrice, color = '#16a34a' }: PriceHistoryChartProps) => {
+export const PriceHistoryChart = ({ basePrice, color = '#16a34a', range = '1M' }: PriceHistoryChartProps) => {
     // Generate static-ish data based on basePrice so it looks consistent for the session
-    const data = generateData(basePrice, 30);
+    const data = useMemo(() => generateData(basePrice, range), [basePrice, range]);
 
     return (
         <div className="h-80 w-full">
@@ -65,9 +104,10 @@ export const PriceHistoryChart = ({ basePrice, color = '#16a34a' }: PriceHistory
                     />
                     <Tooltip
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                        formatter={(val: number | undefined) => {
-                            if (val === undefined) return ['', 'Price'];
-                            return [`₦${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Price'];
+                        formatter={(val: any) => {
+                            if (val === undefined || val === null) return ['', 'Price'];
+                            const numericVal = typeof val === 'number' ? val : parseFloat(val);
+                            return [`₦${numericVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Price'];
                         }}
                     />
                     <Area
