@@ -1,22 +1,27 @@
-# Build stage
-FROM node:18-alpine as build
+# Build stage: Build the React frontend
+FROM node:18-alpine as build-stage
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-# Custom nginx config to handle SPA routing if needed
-RUN echo "server { \
-    listen 80; \
-    location / { \
-        root /usr/share/nginx/html; \
-        index index.html index.htm; \
-        try_files \$uri \$uri/ /index.html; \
-    } \
-}" > /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Production stage: Run the Node.js backend
+FROM node:18-alpine
+WORKDIR /app
+
+# Copy backend dependencies
+COPY server/package*.json ./server/
+RUN cd server && npm install --production
+
+# Copy backend source
+COPY server/ ./server/
+
+# Copy built frontend from build-stage to where backend expects it
+COPY --from=build-stage /app/dist ./dist
+
+EXPOSE 5000
+
+# Start from the server directory
+WORKDIR /app/server
+CMD ["node", "index.js"]
