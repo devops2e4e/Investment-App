@@ -1,71 +1,74 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const SECRET_KEY = process.env.SECRET_KEY || 'finexa_secret_key_123';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 app.use(cors());
 app.use(express.json());
 
-// Database Initialization
-const dbPath = path.resolve(__dirname, 'finexa.db');
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) console.error('Error opening database', err);
-    else console.log('Connected to SQLite database');
+// Database Connection
+if (MONGODB_URI) {
+    mongoose.connect(MONGODB_URI)
+        .then(() => console.log('Connected to MongoDB'))
+        .catch(err => console.error('MongoDB connection error:', err));
+} else {
+    console.warn('MONGODB_URI is not defined. Database features will not work.');
+}
+
+// --- SCHEMAS & MODELS ---
+
+const userSchema = new mongoose.Schema({
+    username: { type: String, unique: true, required: true },
+    email: { type: String, unique: true, required: true },
+    password: { type: String, required: true },
+    riskTolerance: { type: String, default: 'moderate' },
+    balance: { type: Number, default: 1000000 }
 });
 
-// Create Tables
-db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE,
-        email TEXT UNIQUE,
-        password TEXT,
-        risk_tolerance TEXT DEFAULT 'moderate',
-        balance REAL DEFAULT 1000000
-    )`);
+const User = mongoose.model('User', userSchema);
 
-    db.run(`CREATE TABLE IF NOT EXISTS transactions (
-        id TEXT PRIMARY KEY,
-        user_id INTEGER,
-        type TEXT,
-        asset_symbol TEXT,
-        asset_name TEXT,
-        amount REAL,
-        units REAL,
-        price REAL,
-        date TEXT,
-        status TEXT,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-    )`);
-
-    db.run(`CREATE TABLE IF NOT EXISTS holdings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        symbol TEXT,
-        name TEXT,
-        units REAL,
-        avg_price REAL,
-        UNIQUE(user_id, symbol),
-        FOREIGN KEY (user_id) REFERENCES users (id)
-    )`);
+const transactionSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    type: { type: String, required: true },
+    assetSymbol: { type: String, required: true },
+    assetName: { type: String, required: true },
+    amount: { type: Number, required: true },
+    units: { type: Number, required: true },
+    price: { type: Number, required: true },
+    date: { type: Date, default: Date.now },
+    status: { type: String, default: 'Completed' }
 });
 
-// Authentication Middleware
+const Transaction = mongoose.model('Transaction', transactionSchema);
+
+const holdingSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    symbol: { type: String, required: true },
+    name: { type: String, required: true },
+    units: { type: Number, required: true },
+    avgPrice: { type: Number, required: true }
+});
+
+holdingSchema.index({ userId: 1, symbol: 1 }, { unique: true });
+const Holding = mongoose.model('Holding', holdingSchema);
+
+// --- AUTHENTICATION MIDDLEWARE ---
+
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) return res.status(401).json({ error: 'Missing token' });
 
-    jwt.verify(token, SECRET_KEY, (err, user) => {
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
         if (err) return res.status(403).json({ error: 'Invalid token' });
-        req.user = user;
+        req.user = decoded;
         next();
     });
 };
@@ -73,131 +76,173 @@ const authenticateToken = (req, res, next) => {
 // --- AUTH ENDPOINTS ---
 
 app.post('/api/auth/register', async (req, res) => {
-    const { username, email, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const query = `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`;
-    db.run(query, [username, email, hashedPassword], function (err) {
-        if (err) {
-            return res.status(400).json({ error: 'User already exists or invalid data' });
-        }
-        res.json({ id: this.lastID, username, email });
-    });
+    try {
+        const { username, email, password } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        const user = new User({ username, email, password: hashedPassword });
+        await user.save();
+        
+        res.json({ id: user._id, username, email });
+    } catch (err) {
+        res.status(400).json({ error: 'User already exists or invalid data' });
+    }
 });
 
-app.post('/api/auth/login', (req, res) => {
-    const { email, password } = req.body;
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
 
-    const query = `SELECT * FROM users WHERE email = ?`;
-    db.get(query, [email], async (err, user) => {
-        if (err || !user) return res.status(400).json({ error: 'User not found' });
+        if (!user) return res.status(400).json({ error: 'User not found' });
 
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) return res.status(400).json({ error: 'Invalid password' });
 
-        const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY);
+        const token = jwt.sign({ id: user._id, email: user.email }, SECRET_KEY);
         res.json({
             token,
             user: {
-                id: user.id,
+                id: user._id,
                 name: user.username,
                 email: user.email,
-                riskTolerance: user.risk_tolerance
+                riskTolerance: user.riskTolerance
             }
         });
-    });
+    } catch (err) {
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 
 // --- SIMULATION ENDPOINTS ---
 
-app.get('/api/simulation/state', authenticateToken, (req, res) => {
-    const userId = req.user.id;
+app.get('/api/simulation/state', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const state = { balance: 0, holdings: [], transactions: [] };
+        const holdings = await Holding.find({ userId });
+        const transactions = await Transaction.find({ userId }).sort({ date: -1 });
 
-    db.get('SELECT balance FROM users WHERE id = ?', [userId], (err, row) => {
-        if (row) state.balance = row.balance;
-
-        db.all('SELECT * FROM holdings WHERE user_id = ?', [userId], (err, holdings) => {
-            state.holdings = holdings || [];
-
-            db.all('SELECT * FROM transactions WHERE user_id = ? ORDER BY date DESC', [userId], (err, txs) => {
-                state.transactions = txs || [];
-                res.json(state);
-            });
+        res.json({
+            balance: user.balance,
+            holdings: holdings.map(h => ({
+                id: h._id,
+                symbol: h.symbol,
+                name: h.name,
+                units: h.units,
+                avg_price: h.avgPrice
+            })),
+            transactions: transactions.map(t => ({
+                id: t._id,
+                type: t.type,
+                asset_symbol: t.assetSymbol,
+                asset_name: t.assetName,
+                amount: t.amount,
+                units: t.units,
+                price: t.price,
+                date: t.date.toLocaleString(),
+                status: t.status
+            }))
         });
-    });
+    } catch (err) {
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 
-app.post('/api/simulation/trade', authenticateToken, (req, res) => {
-    const userId = req.user.id;
-    const { asset, amount, type } = req.body;
+app.post('/api/simulation/trade', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { asset, amount, type } = req.body;
 
-    // Simple trade logic (same as frontend but on server)
-    const units = amount / asset.price;
-    const fee = amount * 0.015;
-    const totalCost = amount + fee;
+        const units = amount / asset.price;
+        const fee = amount * 0.015;
+        const totalCost = amount + fee;
 
-    db.get('SELECT balance FROM users WHERE id = ?', [userId], (err, userRow) => {
-        if (!userRow) return res.status(404).json({ error: 'User not found' });
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
 
         if (type === 'Buy') {
-            if (userRow.balance < totalCost) return res.status(400).json({ error: 'Insufficient funds' });
+            if (user.balance < totalCost) return res.status(400).json({ error: 'Insufficient funds' });
 
-            db.serialize(() => {
-                db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [totalCost, userId]);
+            // Update balance
+            user.balance -= totalCost;
+            await user.save();
 
-                db.get('SELECT * FROM holdings WHERE user_id = ? AND symbol = ?', [userId, asset.symbol], (err, holdRow) => {
-                    if (holdRow) {
-                        const newUnits = holdRow.units + units;
-                        const newAvg = ((holdRow.units * holdRow.avg_price) + (units * asset.price)) / newUnits;
-                        db.run('UPDATE holdings SET units = ?, avg_price = ? WHERE id = ?', [newUnits, newAvg, holdRow.id]);
-                    } else {
-                        db.run('INSERT INTO holdings (user_id, symbol, name, units, avg_price) VALUES (?, ?, ?, ?, ?)',
-                            [userId, asset.symbol, asset.name, units, asset.price]);
-                    }
+            // Update holding
+            let holding = await Holding.findOne({ userId, symbol: asset.symbol });
+            if (holding) {
+                const totalUnits = holding.units + units;
+                holding.avgPrice = ((holding.units * holding.avgPrice) + (units * asset.price)) / totalUnits;
+                holding.units = totalUnits;
+                await holding.save();
+            } else {
+                holding = new Holding({
+                    userId,
+                    symbol: asset.symbol,
+                    name: asset.name,
+                    units,
+                    avgPrice: asset.price
                 });
+                await holding.save();
+            }
 
-                const txId = Math.random().toString(36).substr(2, 9);
-                db.run('INSERT INTO transactions (id, user_id, type, asset_symbol, asset_name, amount, units, price, date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    [txId, userId, 'Buy', asset.symbol, asset.name, totalCost, units, asset.price, new Date().toLocaleString(), 'Completed']);
-
-                res.json({ success: true });
+            // Create transaction
+            const tx = new Transaction({
+                userId,
+                type: 'Buy',
+                assetSymbol: asset.symbol,
+                assetName: asset.name,
+                amount: totalCost,
+                units,
+                price: asset.price
             });
+            await tx.save();
+
         } else {
             // Sell logic
-            db.get('SELECT * FROM holdings WHERE user_id = ? AND symbol = ?', [userId, asset.symbol], (err, holdRow) => {
-                if (!holdRow || holdRow.units < units) return res.status(400).json({ error: 'Insufficient units' });
+            const holding = await Holding.findOne({ userId, symbol: asset.symbol });
+            if (!holding || holding.units < units) return res.status(400).json({ error: 'Insufficient units' });
 
-                db.serialize(() => {
-                    db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [amount - fee, userId]);
+            user.balance += (amount - fee);
+            await user.save();
 
-                    const updatedUnits = holdRow.units - units;
-                    if (updatedUnits < 0.0001) {
-                        db.run('DELETE FROM holdings WHERE id = ?', [holdRow.id]);
-                    } else {
-                        db.run('UPDATE holdings SET units = ? WHERE id = ?', [updatedUnits, holdRow.id]);
-                    }
+            holding.units -= units;
+            if (holding.units < 0.0001) {
+                await Holding.deleteOne({ _id: holding._id });
+            } else {
+                await holding.save();
+            }
 
-                    const txId = Math.random().toString(36).substr(2, 9);
-                    db.run('INSERT INTO transactions (id, user_id, type, asset_symbol, asset_name, amount, units, price, date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                        [txId, userId, 'Sell', asset.symbol, asset.name, amount - fee, units, asset.price, new Date().toLocaleString(), 'Completed']);
-
-                    res.json({ success: true });
-                });
+            const tx = new Transaction({
+                userId,
+                type: 'Sell',
+                assetSymbol: asset.symbol,
+                assetName: asset.name,
+                amount: amount - fee,
+                units,
+                price: asset.price
             });
+            await tx.save();
         }
-    });
+
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Server error: ' + err.message });
+    }
 });
 
-app.post('/api/simulation/reset', authenticateToken, (req, res) => {
-    const userId = req.user.id;
-    db.serialize(() => {
-        db.run('UPDATE users SET balance = 1000000 WHERE id = ?', [userId]);
-        db.run('DELETE FROM holdings WHERE user_id = ?', [userId]);
-        db.run('DELETE FROM transactions WHERE user_id = ?', [userId]);
+app.post('/api/simulation/reset', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        await User.findByIdAndUpdate(userId, { balance: 1000000 });
+        await Holding.deleteMany({ userId });
+        await Transaction.deleteMany({ userId });
         res.json({ success: true });
-    });
+    } catch (err) {
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 
 app.listen(PORT, () => {
