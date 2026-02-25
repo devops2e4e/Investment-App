@@ -1,14 +1,24 @@
 services:
+  # Backend Service
   - type: web
     name: finexa-backend
-    runtime: node
-    buildCommand: npm install
-    startCommand: npm start
-    rootDir: server
+    runtime: docker
+    dockerContext: server
+    dockerfilePath: Dockerfile
     envVars:
       - key: SECRET_KEY
         generateValue: true
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 10000
+        value: 5000
+
+  # Frontend Service
+  - type: web
+    name: finexa-frontend
+    runtime: docker
+    dockerContext: .
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: VITE_API_URL
+        value: https://investmentapi.e4eweb.space/api # Or use the backend service URL once deployed
